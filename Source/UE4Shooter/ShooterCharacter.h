@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "ShooterCharacter.generated.h"
 
+class USoundCue;
 class UCameraComponent;
 class USpringArmComponent;
 
@@ -40,6 +41,12 @@ protected:
 	 */
 	void LookUpAtRate(float Rate);
 
+	// Called when the Fire Button is pressed
+	void FireWeapon();
+
+
+	bool GetBeamEndLocation(const FVector& MuzzleSocketLocation, FVector& OutBeamLocation);
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -64,6 +71,26 @@ private:
 	// Base look up/down rate in deg/sec. Other scaling may affect final turn rate
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Camera", meta=(AllowPrivateAccess="true"))
 	float BaseLookUpRate;
+
+	// Randomized gunshot sound cue
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Combat", meta=(AllowPrivateAccess="true"))
+	USoundCue* FireSound;
+
+	// Flash spawned at barrel_socket
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Combat", meta=(AllowPrivateAccess="true"))
+	UParticleSystem* MuzzleFlash;
+
+	// Montage for firing the weapon
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Combat", meta=(AllowPrivateAccess="true"))
+	UAnimMontage* HipFireMontage;
+
+	// Particles spawned upon bullet impact
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Combat", meta=(AllowPrivateAccess="true"))
+	UParticleSystem* ImpactParticles;
+
+	// Smoke trail for bullets
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Combat", meta=(AllowPrivateAccess="true"))
+	UParticleSystem* BeamParticles;
 	
 public:
 
