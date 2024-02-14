@@ -6,6 +6,8 @@
 #include "GameFramework/Character.h"
 #include "ShooterCharacter.generated.h"
 
+class AWeapon;
+class AItem;
 class USoundCue;
 class UCameraComponent;
 class USpringArmComponent;
@@ -83,6 +85,27 @@ protected:
 	UFUNCTION()
 	void AutoFireReset();
 
+	// Line trace for items under the crosshairs
+	bool TraceUnderCrosshairs(FHitResult& OutHitResult, FVector& OutHitLocation);
+
+	// Trace for items if OverlappedItemCount> 0
+	void TraceForItems();
+
+	// Spawns a default weapon and equips it
+	AWeapon* SpawnDefaultWeapon();
+
+	// Takes a weapon and attaches it to the mesh
+	void EquipWeapon(AWeapon* WeaponToEquip);
+
+	// Detach weapon and let it fall to the ground
+	void DropWeapon();
+
+	void SeleteButtonPressed();
+	void SelectButtonReleased();
+
+	// Drops currently Equipped weapon and equips TracedHitItem
+	void SwapWeapon(AWeapon* WeaponToSwap);
+	
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -213,6 +236,28 @@ private:
 
 	// Sets a timer between gunshots
 	FTimerHandle AutoFireTimer;
+
+	// True if we should trace every frame for AItems
+	bool bShouldTraceForItems;
+
+	// Number of overlapped items
+	int8 OverlappedItemCount;
+
+	// The AItem we hit last frame
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Items", meta=(AllowPrivateAccess="true"))
+	AItem* TraceHitItemLastFrame;
+
+	// Currently equipped Weapon
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Combat", meta=(AllowPrivateAccess="true"))
+	AWeapon* EquippedWeapon;
+
+	// Set this in Blueprints for the default Weapon class
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Combat", meta=(AllowPrivateAccess="true"))
+	TSubclassOf<AWeapon> DefaultWeaponClass;
+
+	// The item currently hit by our trace in TraceForItems (could be null)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Combat", meta=(AllowPrivateAccess="true"))
+	AItem* TraceHitItem;
 	
 public:
 
@@ -228,6 +273,11 @@ public:
 	//
 	UFUNCTION(BlueprintCallable)
 	float GetCrosshairSpreadMultiplier() const;
+
+	FORCEINLINE int8 GetOverlappedItemCount() const { return OverlappedItemCount; }
+
+	// Adds/subtracts to/from OverlappedItemCount and updates bShouldTraceForItems
+	void IncrementOverlappedItemCount(int8 Amount);
 };
 
 
