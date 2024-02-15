@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "Item.generated.h"
 
+class AShooterCharacter;
 class USphereComponent;
 class UBoxComponent;
 class UWidgetComponent;
@@ -61,6 +62,12 @@ protected:
 	// Sets properties of the Item's components based on State
 	void SetItemProperties(EItemState State);
 
+	// Called when ItemInterpTimer is finished
+	void FinishInterping();
+
+	// Handles item interpolation when in the EquipInterping state
+	void ItemInterp(float DeltaTime);
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -101,6 +108,44 @@ private:
 	// State of the Item
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Item Properties", meta=(AllowPrivateAccess="true"))
 	EItemState ItemState;
+
+	// The curve asset to use for the item's Z location when interping
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Item Properties", meta=(AllowPrivateAccess="true"))
+	UCurveFloat* ItemZCurve;
+
+	// Starting location when interping begins
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Item Properties", meta=(AllowPrivateAccess="true"))
+	FVector ItemInterpStartLocation;
+
+	// Target interp location in front of the camera.
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Item Properties", meta=(AllowPrivateAccess="true"))
+	FVector CameraTargetLocation;
+
+	// true when interping
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Item Properties", meta=(AllowPrivateAccess="true"))
+	bool bInterping;
+
+	// Plays when we start interping
+	FTimerHandle ItemInterpTimer;
+
+	// Duration of the curve and timer
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Item Properties", meta=(AllowPrivateAccess="true"))
+	float ZCurveTime;
+
+	// Pointer to the character
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Item Properties", meta=(AllowPrivateAccess="true"))
+	AShooterCharacter* Character;
+
+	// X and Y for the Item while interping
+	float ItemInterpX;
+	float ItemInterpY;
+
+	// Initial between camera and interping item.
+	float InterpInitialYawOffset;
+
+	// Curved used to scale Item when interping
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Item Properties", meta=(AllowPrivateAccess="true"))
+	UCurveFloat* ItemScaleCurve;
 	
 public:
 	FORCEINLINE UWidgetComponent* GetPickupWidget() const { return PickupWidget; }
@@ -109,4 +154,7 @@ public:
 	FORCEINLINE EItemState GetItemState() const { return ItemState; }
 	void SetItemState(EItemState State);
 	FORCEINLINE USkeletalMeshComponent* GetItemMesh() const { return ItemMesh; }
+
+	// Called from the AShooterCharacter class
+	void StartItemCurve(AShooterCharacter* TargetCharacter);
 };
