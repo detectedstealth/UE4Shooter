@@ -146,6 +146,16 @@ protected:
 	// Called from Animation Blueprint with Release Clip notify
 	UFUNCTION(BlueprintCallable)
 	void ReleaseClip();
+
+	void CrouchButtonPressed();
+
+	virtual void Jump() override;
+
+	// Interps capsule half height when crouching/standing
+	void InterpCapsuleHalfHeight(float DeltaTime);
+
+	void Aim();
+	void StopAiming();
 	
 public:	
 	// Called every frame
@@ -229,9 +239,11 @@ private:
 	bool bAiming;
 
 	// Default camera field of view value
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Combat", meta=(AllowPrivateAccess="true"))
 	float CameraDefaultFOV;
 
 	// Field of view value for when zoomed in
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Combat", meta=(AllowPrivateAccess="true"))
 	float CameraZoomedFOV;
 
 	// Current field of view this frame
@@ -335,6 +347,39 @@ private:
 	// Scene component to attach to the Character's hand during reloading
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Combat", meta=(AllowPrivateAccess="true"))
 	USceneComponent* HandSceneComponent;
+
+	// True when crouching
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Movement", meta=(AllowPrivateAccess="true"))
+	bool bCrouching;
+
+	// Regular movement speed
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Movement", meta=(AllowPrivateAccess="true"))
+	float BaseMovementSpeed;
+
+	// Crouching movement speed
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Movement", meta=(AllowPrivateAccess="true"))
+	float CrouchMovementSpeed;
+
+	// Current half height of the capsule
+	float CurrentCapsuleHalfHeight;
+
+	// Half height of the capsule when not crouching
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Movement", meta=(AllowPrivateAccess="true"))
+	float StandingCapsuleHalfHight;
+
+	// Half height of the capsule when crouching
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Movement", meta=(AllowPrivateAccess="true"))
+	float CrouchingCapsuleHalfHeight;
+
+	// Ground friction while not crouching
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Movement", meta=(AllowPrivateAccess="true"))
+	float BaseGroundFriction;
+
+	// Ground friction while crouching
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Movement", meta=(AllowPrivateAccess="true"))
+	float CrouchingGroundFriction;
+	
+	bool bAimingButtonPressed;
 	
 public:
 
@@ -361,6 +406,8 @@ public:
 	void GetPickupItem(AItem* Item);
 
 	FORCEINLINE ECombatState GetCombatState() const { return CombatState; }
+
+	FORCEINLINE bool GetCrouching() const { return bCrouching; }
 };
 
 

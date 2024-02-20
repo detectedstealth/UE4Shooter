@@ -14,15 +14,17 @@ UShootAnimInstance::UShootAnimInstance() :
 	MovementOffsetYaw(0.f),
 	LastMovementOffsetYaw(0.f),
 	bAiming(false),
-	CharacterRotation(FRotator(0.f)),
-	CharacterRotationLastFrame((FRotator(0.f))),
 	TIPCharacterYaw(0.f),
 	TIPCharacterYawLastFrame(0.f),
-	YawDelta(0.0f),
 	RootYawOffset(0.f),
 	Pitch(0.f),
 	bReloading(false),
-	OffsetState(EOffsetState::EOS_Hip)
+	OffsetState(EOffsetState::EOS_Hip),
+	CharacterRotation(FRotator(0.f)),
+	CharacterRotationLastFrame((FRotator(0.f))),
+	YawDelta(0.0f),
+	RecoilWeight(1.f),
+	bTurningInPlace(false)
 {
 }
 
@@ -35,6 +37,7 @@ void UShootAnimInstance::UpdateAnimationProperties(float DeltaTime)
 
 	if (ShooterCharacter)
 	{
+		bCrouching = ShooterCharacter->GetCrouching();
 		bReloading = ShooterCharacter->GetCombatState() == ECombatState::ECS_Reloading;
 		
 		// Get the lateral speed of the character from velocity
@@ -123,6 +126,7 @@ void UShootAnimInstance::TurnInPlace()
 		const float Turning{ GetCurveValue(TEXT("Turning")) };
 		if (Turning > 0)
 		{
+			bTurningInPlace = true;
 			RotationCurveLastFrame = RotationCurve;
 			RotationCurve = GetCurveValue(TEXT("Rotation"));
 			const float DeltaRotation{ RotationCurve - RotationCurveLastFrame };
@@ -135,6 +139,50 @@ void UShootAnimInstance::TurnInPlace()
 			{
 				const float YawExcess{ ABSRootYawOffset - 90.f };
 				RootYawOffset > 0 ? RootYawOffset -= YawExcess : RootYawOffset += YawExcess;
+			}
+		}
+		else
+		{
+			bTurningInPlace = false;
+		}
+
+		
+	}
+
+	// Set the Recoil Weight
+	if (bTurningInPlace)
+	{
+		if (bReloading)
+		{
+			RecoilWeight = 1.f;
+		}
+		else
+		{
+			RecoilWeight = 0.f;
+		}
+	}
+	else // Not turning in place
+	{
+		if (bCrouching)
+		{
+			if (bReloading)
+			{
+				RecoilWeight = 1.f;
+			}
+			else
+			{
+				RecoilWeight = 0.1f;
+			}
+		}
+		else
+		{
+			if (bAiming || bReloading)
+			{
+				RecoilWeight = 1.f;
+			}
+			else
+			{
+				RecoilWeight = 0.5f;
 			}
 		}
 	}
@@ -152,10 +200,5 @@ void UShootAnimInstance::Lean(float DeltaTime)
 	const float Target{ Delta.Yaw / DeltaTime };
 	const float Interp{ FMath::FInterpTo(YawDelta, Target, DeltaTime, 6.f) };
 	YawDelta = FMath::Clamp(Interp, -90.f, 90.f);
-
-	if (GEngine)
-	{
-		GEngine->AddOnScreenDebugMessage(2, -1, FColor::Cyan, FString::Printf(TEXT("YawDelta: %f"), YawDelta));
-		GEngine->AddOnScreenDebugMessage(3, -1, FColor::Cyan, FString::Printf(TEXT("Delta.Yaw: %f"), Delta.Yaw));
-	}
+	
 }
