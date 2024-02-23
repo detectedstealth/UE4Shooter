@@ -11,6 +11,7 @@ AWeapon::AWeapon() :
 	WeaponType(EWeaponType::EWT_SubmachineGun),
 	AmmoType(EAmmoType::EAT_9mm),
 	ReloadMontageSection(FName(TEXT("Reload SMG"))),
+	bMovingClip(false),
 	ClipBoneName(TEXT("smg_clip"))
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -45,6 +46,8 @@ void AWeapon::ThrowWeapon()
 
 	bFalling = true;
 	GetWorldTimerManager().SetTimer(ThrowWeaponTimer, this, &AWeapon::StopFalling, ThrowWeaponTime);
+
+	EnableGlowMaterial();
 }
 
 void AWeapon::DecrementAmmo()
@@ -74,4 +77,5 @@ void AWeapon::StopFalling()
 {
 	bFalling = false;
 	SetItemState(EItemState::EIS_Pickup);
+	StartPulseTimer();
 }
