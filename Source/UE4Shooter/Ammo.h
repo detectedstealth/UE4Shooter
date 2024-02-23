@@ -29,6 +29,8 @@ protected:
 	void AmmoSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 
+
+
 private:
 
 	// Mesh for the ammo pickup
@@ -49,4 +51,8 @@ private:
 public:
 	FORCEINLINE UStaticMeshComponent* GetAmmoMesh() const { return AmmoMesh; }
 	FORCEINLINE EAmmoType GetAmmoType() const { return AmmoType; }
+	
+	virtual void EnableCustomDepth() override;
+	virtual void DisableCustomDepth() override;
+	
 };
