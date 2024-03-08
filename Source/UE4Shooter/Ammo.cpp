@@ -88,7 +88,7 @@ void AAmmo::AmmoSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* 
 		auto OverlappedCharacter = Cast<AShooterCharacter>(OtherActor);
 		if (OverlappedCharacter)
 		{
-			StartItemCurve(OverlappedCharacter);
+			StartItemCurve(OverlappedCharacter, false);
 			AmmoCollisionSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		}
 	}

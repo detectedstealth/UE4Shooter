@@ -20,6 +20,7 @@ enum class ECombatState: uint8
 	ECS_Unoccupied UMETA(DisplayName="Unoccupied"),
 	ECS_FireTimerInProgress UMETA(DisplayName="FireTimerInProgress"),
 	ECS_Reloading UMETA(DisplayName="Reloading"),
+	ECS_Equipping UMETA(DisplayName="Equipping"),
 
 	ECS_MAX UMETA(DisplayName="DefaultMax")
 };
@@ -39,6 +40,7 @@ struct FInterpLocation
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FEquipItemDelegate, int32, CurrentSlotIndex, int32, NewSlowIndex);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FHighlightIconDelegate, int32, SlotIndex, bool, bStartAnimation);
 
 UCLASS()
 class UE4SHOOTER_API AShooterCharacter : public ACharacter
@@ -123,7 +125,7 @@ protected:
 	AWeapon* SpawnDefaultWeapon();
 
 	// Takes a weapon and attaches it to the mesh
-	void EquipWeapon(AWeapon* WeaponToEquip);
+	void EquipWeapon(AWeapon* WeaponToEquip, bool bSwapping = false);
 
 	// Detach weapon and let it fall to the ground
 	void DropWeapon();
@@ -152,6 +154,9 @@ protected:
 
 	UFUNCTION(BlueprintCallable)
 	void FinishReloading();
+
+	UFUNCTION(BlueprintCallable)
+	void FinishEquipping();
 
 	// Checks to see if we have ammo of the EquippedWeapon's ammo type
 	bool CarryingAmmo();
@@ -186,6 +191,10 @@ protected:
 	void FiveKeyPressed();
 
 	void ExchangeInventoryItems(int32 CurrentItemIndex, int32 NewItemIndex);
+
+	int32 GetEmptyInventorySlot();
+
+	void HighlightInventorySlot();
 	
 public:	
 	// Called every frame
@@ -370,6 +379,10 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Combat", meta=(AllowPrivateAccess="true"))
 	UAnimMontage* ReloadMontage;
 
+	// Montage for reload animations
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Combat", meta=(AllowPrivateAccess="true"))
+	UAnimMontage* EquipMontage;
+
 	// Transform of the clip when we first grab the clip during reloading
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Combat", meta=(AllowPrivateAccess="true"))
 	FTransform ClipTransform;
@@ -459,6 +472,14 @@ private:
 	// Delegate for sending slow information to inventory bar while equipping
 	UPROPERTY(BlueprintAssignable, Category="Delegates", meta=(AllowPrivateAccess="true"))
 	FEquipItemDelegate EquipItemDelegate;
+
+	// Delegate for sending slow information for playing the icon animation
+	UPROPERTY(BlueprintAssignable, Category="Delegates", meta=(AllowPrivateAccess="true"))
+	FHighlightIconDelegate HighlightIconDelegate;
+
+	// The index for the currently highlighted slot
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Inventory", meta=(AllowPrivateAccess="true"))
+	int32 HighlightedSlot;
 	
 public:
 
@@ -500,6 +521,8 @@ public:
 
 	void StartPickupSoundTimer();
 	void StartEquipSoundTimer();
+	
+	void UnHighlightInventorySlot();
 };
 
 
