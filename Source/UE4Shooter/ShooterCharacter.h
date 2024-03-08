@@ -38,6 +38,8 @@ struct FInterpLocation
 	int32 ItemCount;
 };
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FEquipItemDelegate, int32, CurrentSlotIndex, int32, NewSlowIndex);
+
 UCLASS()
 class UE4SHOOTER_API AShooterCharacter : public ACharacter
 {
@@ -126,7 +128,7 @@ protected:
 	// Detach weapon and let it fall to the ground
 	void DropWeapon();
 
-	void SeleteButtonPressed();
+	void SelectButtonPressed();
 	void SelectButtonReleased();
 
 	// Drops currently Equipped weapon and equips TracedHitItem
@@ -175,6 +177,15 @@ protected:
 	void PickupAmmo(AAmmo* Ammo);
 
 	void InitializeInterpLocations();
+
+	void FKeyPressed();
+	void OneKeyPressed();
+	void TwoKeyPressed();
+	void ThreeKeyPressed();
+	void FourKeyPressed();
+	void FiveKeyPressed();
+
+	void ExchangeInventoryItems(int32 CurrentItemIndex, int32 NewItemIndex);
 	
 public:	
 	// Called every frame
@@ -438,6 +449,16 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Items", meta=(AllowPrivateAccess="true"))
 	float EquipSoundResetTime;
+
+	// An array of AItems for our Inventory
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Inventory", meta=(AllowPrivateAccess="true"))
+	TArray<AItem*> Inventory;
+
+	const int32 INVENTORY_CAPACITY{ 6 };
+
+	// Delegate for sending slow information to inventory bar while equipping
+	UPROPERTY(BlueprintAssignable, Category="Delegates", meta=(AllowPrivateAccess="true"))
+	FEquipItemDelegate EquipItemDelegate;
 	
 public:
 
