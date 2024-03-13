@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "WeaponType.h"
 #include "Animation/AnimInstance.h"
 #include "ShootAnimInstance.generated.h"
 
@@ -110,6 +111,10 @@ private:
 	// True when crouching
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Crouching", meta=(AllowPrivateAccess="true"))
 	bool bCrouching;
+
+	// True when equipping
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Crouching", meta=(AllowPrivateAccess="true"))
+	bool bEquipping;
 	
 	// Change the recoil weight based on turning in place and aiming
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Combat", meta=(AllowPrivateAccess="true"))
@@ -118,4 +123,12 @@ private:
 	// True when turning in place
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Combat", meta=(AllowPrivateAccess="true"))
 	bool bTurningInPlace;
+
+	// Weapon Type for the currently equipped weapon
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Combat", meta=(AllowPrivateAccess="true"))
+	EWeaponType EquippedWeaponType;
+
+	// True when not reloading or equipping
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Combat", meta=(AllowPrivateAccess="true"))
+	bool bShouldUseFABRIK;
 };
