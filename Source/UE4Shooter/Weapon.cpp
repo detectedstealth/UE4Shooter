@@ -168,6 +168,9 @@ void AWeapon::OnConstruction(const FTransform& Transform)
 			BoneToHide = WeaponDataRow->BoneToHide;
 			bAutomatic = WeaponDataRow->bAutomatic;
 
+			Damage = WeaponDataRow->Damage;
+			HeadShotDamage = WeaponDataRow->HeadShotDamage;
+
 			if (GetMaterialInstance())
 			{
 				SetDynamicMaterialInstance( UMaterialInstanceDynamic::Create(GetMaterialInstance(), this) );
