@@ -96,23 +96,23 @@ void AEnemy::BeginPlay()
 	const FVector WorldPatrolPoint = UKismetMathLibrary::TransformLocation(GetActorTransform(), PatrolPoint);
 	const FVector WorldPatrolPoint2 = UKismetMathLibrary::TransformLocation(GetActorTransform(), PatrolPoint2);
 
-	DrawDebugSphere(
+	/*DrawDebugSphere(
 		GetWorld(),
 		WorldPatrolPoint,
 		25.f,
 		12,
 		FColor::Red,
 		true
-	);
+	);*/
 
-	DrawDebugSphere(
+	/*DrawDebugSphere(
 		GetWorld(),
 		WorldPatrolPoint2,
 		25.f,
 		12,
 		FColor::Red,
 		true
-	);
+	);*/
 
 	if (EnemyController)
 	{

@@ -512,6 +512,10 @@ private:
 	// Montage for character death
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Combat", meta=(AllowPrivateAccess="true"))
 	UAnimMontage* DeathMontage;
+
+	// True when character dies
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Combat", meta=(AllowPrivateAccess="true"))
+	bool bDead;
 	
 public:
 
