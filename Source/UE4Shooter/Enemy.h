@@ -7,6 +7,11 @@
 #include "GameFramework/Character.h"
 #include "Enemy.generated.h"
 
+class AShooterCharacter;
+class UBoxComponent;
+class USphereComponent;
+class AEnemyController;
+class UBehaviorTree;
 class USoundCue;
 
 UCLASS()
@@ -33,6 +38,12 @@ protected:
 
 	void PlayHitMontage(FName Section, float PlayRate = 1.f);
 
+	UFUNCTION(BlueprintCallable)
+	void PlayAttackMontage(FName Section, float PlayRate = 1.f);
+
+	UFUNCTION(BlueprintPure)
+	FName GetAttackSectionName();
+
 	void ResetHitReactTimer();
 
 	UFUNCTION(BlueprintCallable)
@@ -43,6 +54,50 @@ protected:
 	
 	void UpdateHitNumbers();
 
+	UFUNCTION()
+	void AgroSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION(BlueprintCallable)
+	void SetStunned(bool Stunned);
+
+	UFUNCTION()
+	void CombatRangeOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION()
+	void CombatRangeEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+	void SpawnBlood(const AShooterCharacter* ShooterCharacter, FName SocketName) const;
+
+	UFUNCTION()
+	void OnLeftWeaponOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION()
+	void OnRightWeaponOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION(BlueprintCallable)
+	void ActivateLeftWeapon();
+
+	UFUNCTION(BlueprintCallable)
+	void DeactivateLeftWeapon();
+
+	UFUNCTION(BlueprintCallable)
+	void ActivateRightWeapon();
+
+	UFUNCTION(BlueprintCallable)
+	void DeactivateRightWeapon();
+
+	void DoDamage(AShooterCharacter* Victim);
+
+	// Attempt to stun character
+	void StunCharacter(AShooterCharacter* Victim);
+
+	void ResetCanAttack();
+
+	UFUNCTION(BlueprintCallable)
+	void FinishDeath();
+
+	UFUNCTION()
+	void DestroyEnemy();
+	
 private:
 
 	// Particles to spawn when hit by bullets
@@ -54,7 +109,7 @@ private:
 	USoundCue* ImpactSound;
 
 	// Current health of the enemy
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Combat", meta=(AllowPrivateAccess="true"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Combat", meta=(AllowPrivateAccess="true"))
 	float Health;
 
 	// Maximum health of the enemy
@@ -92,6 +147,89 @@ private:
 	// Time before a HitNumber is removed from the screen
 	UPROPERTY(EditAnywhere, Category="Combat", meta=(AllowPrivateAccess="true"))
 	float HitNumberDestroyTime;
+
+	// Behavior tree for the AI character
+	UPROPERTY(EditAnywhere, Category="Behavior Tree", meta=(AllowPrivateAccess="true"))
+	UBehaviorTree* BehaviorTree;
+
+	// Point for the enemy to move to
+	UPROPERTY(EditAnywhere, Category="Behavior Tree", meta=(AllowPrivateAccess="true", MakeEditWidget="true"))
+	FVector PatrolPoint;
+
+	UPROPERTY(EditAnywhere, Category="Behavior Tree", meta=(AllowPrivateAccess="true", MakeEditWidget="true"))
+	FVector PatrolPoint2;
+
+	AEnemyController* EnemyController;
+
+	// Overlap sphere for when the enemy becomes hostile
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Combat", meta=(AllowPrivateAccess="true"))
+	USphereComponent* AgroSphere;
+
+	// True when playing the get hit animation
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Combat", meta=(AllowPrivateAccess="true"))
+	bool bStunned;
+
+	// Chance of being stunned. 0-1
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Combat", meta=(AllowPrivateAccess="true"))
+	float StunChance;
+
+	// True when in attack range; time to attack!
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Combat", meta=(AllowPrivateAccess="true"))
+	bool bInAttackRange;
+
+	// Sphere for attack range
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Combat", meta=(AllowPrivateAccess="true"))
+	USphereComponent* CombatRangeSphere;
+
+	// Montage containing different attacks
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Combat", meta=(AllowPrivateAccess="true"))
+	UAnimMontage* AttackMontage;
+
+	// Attach montage section names
+	FName AttackLFast;
+	FName AttackRFast;
+	FName AttackL;
+	FName AttackR;
+
+	// Collision volume for the left weapon
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Combat", meta=(AllowPrivateAccess="true"))
+	UBoxComponent* LeftWeaponCollision;
+
+	// Collision volume for the right weapon
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Combat", meta=(AllowPrivateAccess="true"))
+	UBoxComponent* RightWeaponCollision;
+
+	// Base damage for enemy
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Combat", meta=(AllowPrivateAccess="true"))
+	float BaseDamage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Combat", meta=(AllowPrivateAccess="true"))
+	FName LeftWeaponSocket;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Combat", meta=(AllowPrivateAccess="true"))
+	FName RightWeaponSocket;
+
+	// True when enemy can attack
+	UPROPERTY(VisibleAnywhere, Category="Combat", meta=(AllowPrivateAccess="true"))
+	bool bCanAttack;
+
+	FTimerHandle AttackWaitTimer;
+
+	// Minimum wait time between attacks
+	UPROPERTY(EditAnywhere, Category="Combat", meta=(AllowPrivateAccess="true"))
+	float AttackWaitTime;
+
+	// Death anim montage for the enemy
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Combat", meta=(AllowPrivateAccess="true"))
+	UAnimMontage* DeathMontage;
+
+	bool bDying;
+
+	FTimerHandle DeathTimer;
+
+	// Time after death until destroy
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Combat", meta=(AllowPrivateAccess="true"))
+	float DeathTime;
 	
 public:	
 	// Called every frame
@@ -100,7 +238,7 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	virtual void BulletHit_Implementation(FHitResult HitResult) override;
+	virtual void BulletHit_Implementation(FHitResult HitResult, AActor* Shooter, AController* ShooterController) override;
 
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
@@ -108,4 +246,7 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void ShowHitNumber(int32 Damage, FVector HitLocation, bool bHeadShot);
+
+	FORCEINLINE UBehaviorTree* GetBehaviorTree() const { return BehaviorTree; }
 };
+
